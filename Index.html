@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Whiskers of the Night Weather</title>
+    <meta name="description" content="A living nocturnal weather dashboard for Whiskers of the Night.">
+    <meta name="theme-color" content="#0a0e17">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body class="scene-clear-night">
+
+    <!-- APP SHELL -->
+    <div id="app-container">
+        
+        <!-- HEADER: Location & Controls -->
+        <header class="top-bar">
+            <button id="btn-location" aria-label="Refresh Location" title="Locate Me">
+                <svg viewBox="0 0 24 24"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm0-6C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+            </button>
+            <div id="location-display" class="location-name">Loading...</div>
+            <button id="btn-settings" aria-label="Settings" title="Settings">
+                <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.488.488 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+            </button>
+        </header>
+
+        <!-- MAIN SCENE -->
+        <main id="scene-root" aria-live="polite">
+            <!-- SVG Layers injected by JS or pre-rendered statics -->
+            <div id="sky-gradient"></div>
+            
+            <div id="environment-layer">
+                <!-- Dynamic Weather Elements: Stars, Moon, Clouds, Rain, Snow -->
+            </div>
+
+            <!-- WHISKERS THE CAT -->
+            <svg id="whiskers-svg" viewBox="0 0 200 200" class="whiskers-figure" aria-hidden="true">
+                <defs>
+                    <filter id="glow">
+                        <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                        <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                    </filter>
+                </defs>
+                <!-- Silhouette -->
+                <g id="cat-body" transform-origin="100 140">
+                    <!-- Tail -->
+                    <path d="M120 150 Q 160 140 170 100 T 150 80" stroke="#0a0e17" stroke-width="8" fill="none" filter="url(#glow)" />
+                    <!-- Legs/Body Base -->
+                    <ellipse cx="100" cy="150" rx="35" ry="40" fill="#0a0e17" />
+                    <!-- Head -->
+                    <circle cx="100" cy="100" r="30" fill="#0a0e17" />
+                    <!-- Ears -->
+                    <polygon points="85 80 75 55 95 70" fill="#0a0e17" />
+                    <polygon points="115 80 125 55 105 70" fill="#0a0e17" />
+                    <!-- Eyes (Emerald) -->
+                    <circle cx="90" cy="95" r="3" fill="#50c878" filter="url(#glow)" class="eye-l" />
+                    <circle cx="110" cy="95" r="3" fill="#50c878" filter="url(#glow)" class="eye-r" />
+                    <!-- Rim Light -->
+                    <path d="M70 100 Q 100 140 130 100" stroke="#7d9dbb" stroke-width="1" fill="none" opacity="0.6" style="mix-blend-mode: overlay;" />
+                </g>
+            </svg>
+
+            <div id="horizon-overlay"></div>
+        </main>
+
+        <!-- DATA OVERLAY -->
+        <div id="dashboard-panel">
+            <section class="primary-stats">
+                <div class="temp-block">
+                    <span id="curr-temp" class="huge-temp">--°</span>
+                    <div id="condition-text" class="condition-desc">Searching sky...</div>
+                    <div id="high-low" class="range-info">H:-- L:--</div>
+                </div>
+                <div class="feel-block">
+                    Feels like <span id="feel-temp">--</span>
+                </div>
+            </section>
+
+            <div id="moon-widget" class="widget-row moon-section">
+                <div class="moon-visual" id="moon-gauge"></div>
+                <div class="moon-data">
+                    <span id="moon-phase-name">Unknown Phase</span>
+                    <br>
+                    <small id="moon-rise-set">Rise: -- Set: --</small>
+                </div>
+            </div>
+
+            <div class="details-grid">
+                <div class="detail-item"><span class="label">Humidity</span> <span id="humidity">--%</span></div>
+                <div class="detail-item"><span class="label">Wind</span> <span id="wind-speed">-- km/h</span></div>
+                <div class="detail-item"><span class="label">Precip</span> <span id="precip-prob">--%</span></div>
+                <div class="detail-item"><span class="label">UV Index</span> <span id="uv-index">--</span></div>
+            </div>
+
+            <button id="toggle-forecast" class="expander-btn">View Forecast</button>
+        </div>
+
+        <!-- FORECAST DRAWER -->
+        <div id="forecast-drawer" class="drawer hidden">
+            <div class="hourly-scroll">
+                <h3>Next 24 Hours</h3>
+                <div id="hourly-list"></div>
+            </div>
+            <div class="daily-scroll">
+                <h3>7-Day Outlook</h3>
+                <div id="daily-list"></div>
+            </div>
+        </div>
+
+        <!-- SETTINGS MODAL -->
+        <dialog id="settings-modal">
+            <form method="dialog" id="settings-form">
+                <h3>Observatory Settings</h3>
+                
+                <label>Units</label>
+                <select id="setting-unit">
+                    <option value="metric">Metric (°C, km/h)</option>
+                    <option value="imperial">Imperial (°F, mph)</option>
+                </select>
+
+                <label>Visual Mode</label>
+                <select id="setting-theme">
+                    <option value="auto">Automatic (Day/Night)</option>
+                    <option value="night">Always Nocturnal</option>
+                </select>
+
+                <label>Motion</label>
+                <label><input type="checkbox" id="setting-motion-auto" checked> Respect System Settings</label>
+                <label><input type="checkbox" id="setting-motion-force"> Force Reduced Motion</label>
+
+                <button type="button" id="manual-search-trigger">Enter City Manually</button>
+                
+                <footer>
+                    <button type="submit">Save & Close</button>
+                </footer>
+            </form>
+        </dialog>
+
+        <!-- MANUAL SEARCH MODAL -->
+        <dialog id="search-modal">
+             <form method="dialog" id="search-form">
+                <h3>Select Location</h3>
+                <div class="search-box">
+                    <input type="text" id="city-input" placeholder="City, Region, or Postal Code">
+                    <button type="submit">Search</button>
+                </div>
+                <ul id="search-results"></ul>
+                <p class="hint">Tip: Enter "London, UK" or "Denver"</p>
+             </form>
+        </dialog>
+
+    </div>
+
+    <!-- ALERTS -->
+    <div id="alert-banner" class="hidden" role="alert">
+        <strong id="alert-title">Alert Title:</strong> <span id="alert-msg">Details</span>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

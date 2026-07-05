@@ -1,0 +1,164 @@
+/* --- WHISKERS DESIGN TOKENS --- */
+:root {
+    --color-obsidian: #0a0e17;
+    --color-midnight: #101827;
+    --color-indigo: #1f2942;
+    --color-violet-deep: #2a2138;
+    --color-silver: #aebfd6;
+    --color-emerald: #50c878; /* Signature Accent */
+    --color-cyan: #5de2ff;
+    --color-ambar: #ffc66d;
+    
+    --font-main: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --shadow-card: 0 8px 32px rgba(0,0,0,0.4);
+    --glass-bg: rgba(10, 14, 23, 0.75);
+    --border-subtle: 1px solid rgba(255,255,255,0.1);
+    
+    --ease-out: cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+/* Global Reset & Layout */
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: var(--font-main); color: var(--color-silver); background: var(--color-obsidian); }
+
+#app-container {
+    position: relative;
+    width: 100vw; height: 100vh;
+    display: flex; flex-direction: column;
+    z-index: 1;
+}
+
+/* --- SCENE & VISUALS --- */
+#scene-root {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1;
+    overflow: hidden;
+    transition: background 2s ease;
+}
+
+/* Dynamic Gradients handled by JS classes on body, default here */
+.scene-default { background: linear-gradient(to bottom, #0f121a, #1a1f2e); }
+/* Classes applied by JS based on time/weather will override these */
+
+#sky-gradient {
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 50% 20%, #2e364f 0%, #0a0e17 60%);
+    opacity: 0.8; mix-blend-mode: screen; pointer-events: none;
+}
+
+#environment-layer {
+    position: absolute; inset: 0; pointer-events: none; z-index: 0;
+}
+
+/* Horizon Overlay (Ground/Water reflection) */
+#horizon-overlay {
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 40%;
+    background: linear-gradient(to top, #05070a 0%, transparent 100%);
+    z-index: 1; pointer-events: none;
+}
+
+/* Whiskers Character */
+.whiskers-figure {
+    position: absolute; bottom: 15%; right: 10%;
+    width: 180px; height: auto;
+    filter: drop-shadow(0 0 10px rgba(0,0,0,0.8));
+    animation: breathe 4s ease-in-out infinite alternate;
+    transition: transform 0.5s ease;
+}
+
+@keyframes breathe { from { transform: translateY(0); } to { transform: translateY(-3px); } }
+
+.eye-l, .eye-r { transition: opacity 0.3s; }
+
+/* --- DASHBOARD UI --- */
+#dashboard-panel {
+    position: absolute; top: 70px; left: 15px; right: 15px;
+    z-index: 10;
+    backdrop-filter: blur(4px);
+    /* Glass effect managed by container transparency if desired, but we keep text high contrast */
+}
+
+.top-bar {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: 60px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px;
+    z-index: 50;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+}
+
+.location-name { font-weight: 600; letter-spacing: 0.5px; font-size: 1.1rem; }
+button svg { width: 24px; height: 24px; fill: white; opacity: 0.9; }
+button { background: none; border: none; cursor: pointer; padding: 5px; }
+
+.primary-stats {
+    background: var(--glass-bg);
+    border-radius: 12px; padding: 15px;
+    border: var(--border-subtle);
+    box-shadow: var(--shadow-card);
+    display: inline-flex; flex-direction: column; min-width: 220px;
+}
+
+.huge-temp { font-size: 4rem; line-height: 1; font-weight: 200; color: white; }
+.condition-desc { font-size: 1.1rem; color: var(--color-cyan); margin-bottom: 5px; }
+.range-info { font-size: 0.9rem; opacity: 0.8; }
+
+.widget-row {
+    margin-top: 15px; background: var(--glass-bg); border-radius: 12px; padding: 10px 15px;
+    border: var(--border-subtle); display: flex; align-items: center; gap: 15px;
+}
+
+.moon-visual { width: 40px; height: 40px; border-radius: 50%; background: #ccc; position: relative; overflow: hidden; box-shadow: inset -5px 0 10px rgba(0,0,0,0.5); }
+.moon-phases div { position: absolute; width: 100%; height: 100%; border-radius: 50%; transition: all 0.5s; }
+
+.details-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px;
+}
+.detail-item { background: var(--glass-bg); padding: 8px; border-radius: 8px; font-size: 0.9rem; border: var(--border-subtle); }
+.detail-item .label { display: block; font-size: 0.75rem; opacity: 0.7; text-transform: uppercase; margin-bottom: 2px;}
+
+.expander-btn {
+    width: 100%; margin-top: 10px; padding: 10px; background: transparent; border: 1px solid var(--color-emerald); color: var(--color-emerald); border-radius: 8px; cursor: pointer; font-weight: bold;
+}
+
+/* Drawers */
+.drawer {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(10, 14, 23, 0.95);
+    border-top-left-radius: 20px; border-top-right-radius: 20px;
+    padding: 20px; max-height: 60vh; overflow-y: auto;
+    transform: translateY(100%); transition: transform 0.4s var(--ease-out);
+    z-index: 60; border-top: 1px solid var(--color-indigo);
+}
+.drawer:not(.hidden) { transform: translateY(0); }
+
+.hourly-scroll, .daily-scroll { margin-bottom: 20px; }
+.scroll-horizontal { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
+.forecast-card { 
+    background: var(--midnight); min-width: 80px; padding: 10px; border-radius: 8px; text-align: center; border: var(--border-subtle);
+}
+
+/* Modals */
+dialog {
+    background: var(--midnight); color: var(--color-silver); border: 1px solid var(--color-indigo); border-radius: 12px; width: 90%; max-width: 400px;
+}
+dialog::backdrop { background: rgba(0,0,0,0.8); backdrop-filter: blur(2px); }
+dialog footer { text-align: right; margin-top: 20px; }
+dialog button[type="submit"] { background: var(--color-cyan); color: black; border: none; padding: 8px 16px; border-radius: 4px; font-weight: bold; }
+
+/* Animations for Weather Conditions (CSS + JS toggles) */
+.animate-rain { pointer-events: none; }
+.rain-drop { position: absolute; width: 2px; height: 10px; background: rgba(170, 190, 220, 0.4); top: -20px; animation: fall linear infinite; }
+@keyframes fall { to { transform: translateY(120vh); } }
+
+.animate-snow { pointer-events: none; }
+.snow-flake { position: absolute; width: 6px; height: 6px; background: white; border-radius: 50%; top: -10px; opacity: 0.8; animation: snowFall linear infinite; }
+@keyframes snowFall { to { transform: translateY(110vh) rotate(360deg); } }
+
+.animate-storm-lightning { animation: flash 4s infinite; }
+@keyframes flash { 0%, 98% { opacity: 0; } 99% { opacity: 0.2; background: white; } 100% { opacity: 0; } }
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+    .animate-rain, .animate-snow { display: none; }
+}

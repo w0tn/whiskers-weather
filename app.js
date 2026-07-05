@@ -144,6 +144,7 @@ async function fetchData() {
         const data = await res.json();
         
         AppState.currentWeather = data.current_weather;
+        AppState.hourly = data.hourly;
         AppState.forecast = data.daily;
         AppState.lastUpdated = new Date().toISOString();
         
@@ -235,12 +236,12 @@ function updateUI(disp) {
     els.highLow.textContent = `H:--° L:--°`; // Populate from forecast later ideally
     
     // Fetch Hourly for High/Low approximation
-    if(AppState.forecast) {
-        // Just grab max/min daily for simplicity
-        const maxT = AppState.foreday.max_temp; // Mocking structure access
-    }
+        if(AppState.forecast) {
+        els.highLow.textContent = `H:${AppState.forecast.temperature_2m_max[0]}° L:${AppState.forecast.temperature_2m_min[0]}°`;
+        }
     
-    els.feelTemp.textContent = `Feels like ${disp.windspeed} (${disp.is_day===1?'Day':'Night'})`;
+        els.feelTemp.textContent = `Feels like ${disp.temperature}°`;
+        els.windSpeed.textContent = `${disp.windspeed} ${AppState.units==='metric'?'km/h':'mph'}`;
     
     // Details need fetching from hourly or current specific fields
     // Assuming some extra params were requested, for now using available
@@ -289,10 +290,12 @@ function renderSceneEnvironment(curr) {
     
     // 1. Day/Night Cycle
     const now = new Date();
-    const sunInfo = AppState.forecast.daily.find((_,i) => AppState.forecast.time[i] >= now.toISOString()) || AppState.forecast.daily[0];
-    const sunrise = new Date(sunInfo.sunrise);
-    const sunset = new Date(sunInfo.sunset);
-    const isDay = now >= sunrise && now < sunset;
+    const sunriseStr = AppState.forecast.sunrise ? AppState.forecast.sunrise[0] : null;
+    const sunsetStr = AppState.forecast.sunset ? AppState.forecast.sunset[0] : null;
+    const sunrise = sunriseStr ? new Date(sunriseStr) : new Date(now);
+    sunrise.setHours(6, 0, 0, 0);
+    const sunset = sunsetStr ? new Date(sunsetStr) : new Date(now);
+    sunset.setHours(18, 0, 0, 0);
     
     // Theme Override
     if(AppState.theme === 'night') { isDay = false; }
@@ -336,13 +339,15 @@ function renderSceneEnvironment(curr) {
     }
 
     // 5. Precipitation
-    if(curr.weathercode > 50 && AppState.reducedMotion !== 'force') {
-        createParticles('rain', 100);
+    if(curr.weathercode > 50 && curr.weathercode < 70 && AppState.reducedMotion !== true) {
+        createParticles('rain', 80);
     }
-    if(curr.weathercode > 70 && AppState.reducedMotion !== 'force') {
-        createParticles('snow', 60);
+    if(curr.weathercode >= 71 && curr.weathercode < 80 && AppState.reducedMotion !== true) {
+        createParticles('snow', 50);
     }
-}
+    if(curr.weathercode >= 80 && curr.weathercode < 90 && AppState.reducedMotion !== true) {
+        createParticles('rain', 120);
+    }
 
 function createParticles(type, count) {
     const frag = document.createDocumentFragment();

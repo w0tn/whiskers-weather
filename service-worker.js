@@ -1,10 +1,10 @@
 const CACHE_NAME = 'wotn-weather-v1';
 const ASSETS = [
-    '/',
-    '/index.html',
-    '/styles.css',
-    '/app.js',
-    '/manifest.json'
+    './',
+    './index.html',
+    './styles.css',
+    './app.js',
+    './manifest.json'
 ];
 
 self.addEventListener('install', (evt) => {

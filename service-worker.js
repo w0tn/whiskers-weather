@@ -1,39 +1,16 @@
-const CACHE_NAME = 'wotn-weather-v1';
-const ASSETS = [
-    './',
-    './index.html',
-    './styles.css',
-    './app.js',
-    './manifest.json'
-];
-
-self.addEventListener('install', (evt) => {
-    evt.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
-    );
-});
-
-self.addEventListener('activate', (evt) => {
-    evt.waitUntil(
-        caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))))
-    );
-});
-
-self.addEventListener('fetch', (evt) => {
-    evt.respondWith(
-        caches.match(evt.request).then(cacheRes => {
-            if(cacheRes) return cacheRes;
-            return fetch(evt.request).then(networkRes => {
-                // Clone response
-                const clone = networkRes.clone();
-                // Cache only successful HTML/API responses if you want to be fancy
-                caches.open(CACHE_NAME).then(c => c.put(evt.request, clone));
-                return networkRes;
-            }).catch(() => {
-                // Offline fallback logic could go here
-                // Return cached shell if possible
-                if(evt.request.mode === 'navigate') return caches.match('/index.html');
-            });
-        })
-    );
+var CACHE = 'wotn-v2';
+var ASSETS = ['./','./index.html','./manifest.json'];
+self.addEventListener('install', function(e) { e.waitUntil(caches.open(CACHE).then(function(c) { return c.addAll(ASSETS); })); });
+self.addEventListener('activate', function(e) { e.waitUntil(caches.keys().then(function(keys) { return Promise.all(keys.filter(function(k) { return k !== CACHE; }).map(function(k) { return caches.delete(k); })); })); });
+self.addEventListener('fetch', function(e) {
+    e.respondWith(caches.match(e.request).then(function(cached) {
+        if (cached) return cached;
+        return fetch(e.request).then(function(resp) {
+            var clone = resp.clone();
+            caches.open(CACHE).then(function(c) { c.put(e.request, clone); });
+            return resp;
+        }).catch(function() {
+            if (e.request.mode === 'navigate') return caches.match('./index.html');
+        });
+    }));
 });
